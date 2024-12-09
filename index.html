@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Document</title>
+</head>
+
+<body>
+    <video autoplay muted loop id="background-video">
+        <source src="img/bg.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    <div id="gameContainer">
+        <h1 class="mb-4 text-light">Tic Tac Toe</h1>
+        <div id="cellContainer">
+            <div cellIndex="0" class="cell"></div>
+            <div cellIndex="1" class="cell"></div>
+            <div cellIndex="2" class="cell"></div>
+            <div cellIndex="3" class="cell"></div>
+            <div cellIndex="4" class="cell"></div>
+            <div cellIndex="5" class="cell"></div>
+            <div cellIndex="6" class="cell"></div>
+            <div cellIndex="7" class="cell"></div>
+            <div cellIndex="8" class="cell"></div>
+        </div>
+
+        <div class="my-3">
+            <h2 id="statusText"></h2>
+            <p id="timecounter">......</p>
+            <button id="restartBtn">Restart</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
