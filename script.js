@@ -2,15 +2,19 @@ const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
 const restartBtn = document.querySelector("#restartBtn");
 const timeCounter = document.querySelector("#timecounter");
+const winningCombinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+    [0, 4, 8], [2, 4, 6], [5, 7, 8]  
+];
 
 let options = ["", "", "", "", "", "", "", "", ""];
 let currentPlayer = "X";
 let running = false;
 let turnTimer;
-let remainingTime = 3;
 let turn = 1;
 
-initializeGame()
+initializeGame();
 
 function initializeGame() {
     cells.forEach(cell => cell.addEventListener("click", cellClicked));
@@ -23,15 +27,14 @@ function initializeGame() {
 }
 
 function cellClicked() {
-    const cellIndex = this.getAttribute("cellIndex");
+    if (currentPlayer === "O" || !running) return; //Disable user clicking
 
-    if (options[cellIndex] != "" || !running) {
-        return;
-    }
+    const cellIndex = this.getAttribute("cellIndex");
+    if (options[cellIndex] != "") return;
 
     updateCell(this, cellIndex);
-    clearInterval(turnTimer); 
-    timeCounter.textContent = ""; 
+    clearInterval(turnTimer);
+    timeCounter.textContent = "";
     checkWinner();
 }
 
@@ -41,19 +44,18 @@ function updateCell(cell, index) {
 }
 
 function changePlayer() {
-    currentPlayer = (currentPlayer == "X") ? "O" : "X";
+    currentPlayer = (currentPlayer === "X") ? "O" : "X";
     statusText.textContent = `${currentPlayer}'s turn`;
 
     turn++;
     if (currentPlayer === "O" && running) {
-        setTimeout(makeMoveByAI, 500); // Delay để mô phỏng suy nghĩ của AI
+        setTimeout(makeMoveByAI, 500); //Delay for checking
     } else if (turn > 1) {
         startTurnTimer();
     }
 }
 
 function makeMoveByAI() {
-    // 1. Check nếu AI có thể thắng trong nước đi này
     let move = findBestMove("O");
     if (move !== -1) {
         updateCell(cells[move], move);
@@ -98,93 +100,32 @@ function findBestMove(player) {
         if (options[i] === "") {
             options[i] = player;
             if (isWinner(player)) {
-                options[i] = ""; 
-                return i; 
+                options[i] = "";
+                return i;
             }
-            options[i] = ""; 
+            options[i] = "";
         }
     }
-
-    return -1; 
+    return -1;
 }
 
 function isWinner(player) {
-    for (let r = 0; r < 3; r++) {
-        const rowStart = r * 3;
-        if (options[rowStart] === player &&
-            options[rowStart] === options[rowStart + 1] &&
-            options[rowStart] === options[rowStart + 2]) {
-            return true;
-        }
-    }
-
-    for (let c = 0; c < 3; c++) {
-        if (options[c] === player &&
-            options[c] === options[c + 3] &&
-            options[c] === options[c + 6]) {
-            return true;
-        }
-    }
-
-    if (options[0] === player &&
-        options[0] === options[4] &&
-        options[0] === options[8]) {
-        return true;
-    }
-
-    if (options[2] === player &&
-        options[2] === options[4] &&
-        options[2] === options[6]) {
-        return true;
-    }
-
-    return false;
+    //Loop through each combination with some.
+    //For each combination, check if all cells in the combination (index) have a value equal to player with every.
+    //If at least one combination is found that meets the condition, return true, meaning that player has won.
+    return winningCombinations.some(combination =>
+        combination.every(index => options[index] === player)
+    );
 }
 
-
 function checkWinner() {
-    for (let r = 0; r < 3; r++) {
-        const rowStart = r * 3;
-        if (options[rowStart] !== "" &&
-            options[rowStart] === options[rowStart + 1] &&
-            options[rowStart + 1] === options[rowStart + 2]) {
-            highlightWinner([rowStart, rowStart + 1, rowStart + 2]);
-            statusText.textContent = `${currentPlayer} wins!`;
-            running = false;
-            clearTimeout(turnTimer);
+    for (const combination of winningCombinations) {
+        const [a, b, c] = combination;
+        if (options[a] !== "" && options[a] === options[b] && options[b] === options[c]) {
+            highlightWinner(combination); 
+            printWinner(currentPlayer);   
             return;
         }
-    }
-
-    for (let c = 0; c < 3; c++) {
-        if (options[c] !== "" &&
-            options[c] === options[c + 3] &&
-            options[c + 3] === options[c + 6]) {
-            highlightWinner([c, c + 3, c + 6]);
-            statusText.textContent = `${currentPlayer} wins!`;
-            running = false;
-            clearTimeout(turnTimer);
-            return;
-        }
-    }
-
-    if (options[0] !== "" &&
-        options[0] === options[4] &&
-        options[4] === options[8]) {
-        highlightWinner([0, 4, 8]);
-        statusText.textContent = `${currentPlayer} wins!`;
-        running = false;
-        clearTimeout(turnTimer);
-        return;
-    }
-
-    if (options[2] !== "" &&
-        options[2] === options[4] &&
-        options[4] === options[6]) {
-        highlightWinner([2, 4, 6]);
-        statusText.textContent = `${currentPlayer} wins!`;
-        running = false;
-        return;
     }
 
     if (!options.includes("")) {
@@ -192,9 +133,15 @@ function checkWinner() {
         running = false;
         clearTimeout(turnTimer);
         return;
-    } else {
-        changePlayer();
     }
+
+    changePlayer();
+}
+
+function printWinner(currentPlayer) {
+    statusText.textContent = `${currentPlayer} wins!`;
+    running = false;
+    clearTimeout(turnTimer);
 }
 
 function highlightWinner(indices) {
@@ -206,22 +153,18 @@ function highlightWinner(indices) {
 
 function startTurnTimer() {
     clearInterval(turnTimer);
-    remainingTime = 3;
-    timeCounter.textContent = `Time Left: ${remainingTime}s`;
+    let remainingTime = 5;
+    timeCounter.textContent = `${remainingTime}s`;
 
     turnTimer = setInterval(() => {
         remainingTime -= 1;
-        timeCounter.textContent = `Time Left: ${remainingTime}s`;
+        timeCounter.textContent = `${remainingTime}s`;
 
         if (remainingTime <= 0) {
             clearInterval(turnTimer);
-            timeCounter.textContent = `${currentPlayer} missed their turn!`;
-            setTimeout(() => {
-                changePlayer();
-                timeCounter.textContent = "Time Left: 3s"; 
-            }, 1000);
+            changePlayer();
         }
-    }, 1000); 
+    }, 1000);
 }
 
 function restartGame() {
@@ -235,6 +178,6 @@ function restartGame() {
     });
     running = true;
     clearInterval(turnTimer);
-    timeCounter.textContent = "......";
+    timeCounter.textContent = "5s";
     turn = 1;
 }
