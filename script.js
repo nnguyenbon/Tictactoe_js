@@ -5,8 +5,7 @@ const timeCounter = document.querySelector("#timecounter");
 const winningCombinations = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], 
     [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-    [0, 4, 8], [2, 4, 6], [5, 7, 8],
-    [5, 6, 8]  
+    [0, 4, 8], [2, 4, 6]
 ];
 
 let options = ["", "", "", "", "", "", "", "", ""];
@@ -56,6 +55,7 @@ function changePlayer() {
     }
 }
 
+
 function makeMoveByAI() {
     let move = findBestMove("O");
     if (move !== -1) {
@@ -65,6 +65,20 @@ function makeMoveByAI() {
     }
 
     move = findBestMove("X");
+    if (move !== -1) {
+        updateCell(cells[move], move);
+        checkWinner();
+        return;
+    }
+
+    move = detectFork("O");
+    if (move !== -1) {
+        updateCell(cells[move], move);
+        checkWinner();
+        return;
+    }
+
+    move = detectFork("X");
     if (move !== -1) {
         updateCell(cells[move], move);
         checkWinner();
@@ -108,6 +122,30 @@ function findBestMove(player) {
         }
     }
     return -1;
+}
+
+function detectFork(player) {
+    let forkCount = 0;
+    let forkIndex = -1;
+
+    for (let i = 0; i < options.length; i++) {
+        if (options[i] === "") {
+            options[i] = player;
+            if (countWinningMoves(player) > 1) {
+                forkCount++;
+                forkIndex = i;
+            }
+            options[i] = "";
+        }
+    }
+    return forkCount === 1 ? forkIndex : -1;
+}
+
+function countWinningMoves(player) {
+    return winningCombinations.filter(combination =>
+        combination.filter(index => options[index] === player).length === 2 &&
+        combination.some(index => options[index] === "")
+    ).length;
 }
 
 function isWinner(player) {
